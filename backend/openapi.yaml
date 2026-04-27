@@ -1,0 +1,951 @@
+openapi: 3.0.3
+info:
+  title: Sistema de Venta de Pasajes — API
+  description: >
+    Contrato formal de la API REST para el Sistema de Venta de Pasajes
+    de la Flota Mariscal Santa Cruz.  Cubre Etapas 1 (Catálogos) y
+    2 (Creación de Viaje) según spec.md.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000/api
+    description: Desarrollo local
+
+tags:
+  - name: Ciudades
+    description: CRUD del catálogo de ciudades (HU-001)
+  - name: Rutas
+    description: CRUD de rutas con paradas intermedias (HU-002)
+  - name: Tipos
+    description: CRUD de tipos de bus
+  - name: Buses
+    description: CRUD de la flota de buses (HU-003)
+  - name: Personal
+    description: CRUD del personal operativo (HU-004)
+  - name: Viajes
+    description: Creación y gestión de viajes (HU-005, HU-006, HU-007)
+
+# ═══════════════════════════════════════════════════════════════════════
+#  PATHS
+# ═══════════════════════════════════════════════════════════════════════
+paths:
+
+  # ──────────────────── CIUDADES ────────────────────
+  /ciudades:
+    get:
+      tags: [Ciudades]
+      summary: Listar todas las ciudades
+      operationId: listarCiudades
+      responses:
+        '200':
+          description: Lista de ciudades
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ciudad'
+    post:
+      tags: [Ciudades]
+      summary: Crear una ciudad
+      operationId: crearCiudad
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CiudadCreate'
+      responses:
+        '201':
+          description: Ciudad creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ciudad'
+        '409':
+          description: Ciudad duplicada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /ciudades/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    get:
+      tags: [Ciudades]
+      summary: Obtener ciudad por ID
+      operationId: obtenerCiudad
+      responses:
+        '200':
+          description: Ciudad encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ciudad'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Ciudades]
+      summary: Actualizar ciudad
+      operationId: actualizarCiudad
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CiudadCreate'
+      responses:
+        '200':
+          description: Ciudad actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ciudad'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Ciudades]
+      summary: Eliminar ciudad (soft-delete)
+      operationId: eliminarCiudad
+      responses:
+        '204':
+          description: Ciudad eliminada
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ──────────────────── RUTAS ────────────────────
+  /rutas:
+    get:
+      tags: [Rutas]
+      summary: Listar todas las rutas
+      operationId: listarRutas
+      responses:
+        '200':
+          description: Lista de rutas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ruta'
+    post:
+      tags: [Rutas]
+      summary: Crear una ruta con paradas intermedias
+      operationId: crearRuta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RutaCreate'
+      responses:
+        '201':
+          description: Ruta creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ruta'
+
+  /rutas/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    get:
+      tags: [Rutas]
+      summary: Obtener ruta por ID (incluye paradas)
+      operationId: obtenerRuta
+      responses:
+        '200':
+          description: Ruta con paradas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RutaDetalle'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Rutas]
+      summary: Actualizar ruta
+      operationId: actualizarRuta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RutaCreate'
+      responses:
+        '200':
+          description: Ruta actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ruta'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Rutas]
+      summary: Eliminar ruta
+      operationId: eliminarRuta
+      responses:
+        '204':
+          description: Ruta eliminada
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ──────────────────── TIPOS ────────────────────
+  /tipos:
+    get:
+      tags: [Tipos]
+      summary: Listar tipos de bus
+      operationId: listarTipos
+      responses:
+        '200':
+          description: Lista de tipos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tipo'
+    post:
+      tags: [Tipos]
+      summary: Crear tipo de bus
+      operationId: crearTipo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TipoCreate'
+      responses:
+        '201':
+          description: Tipo creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tipo'
+
+  /tipos/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    get:
+      tags: [Tipos]
+      summary: Obtener tipo por ID
+      operationId: obtenerTipo
+      responses:
+        '200':
+          description: Tipo encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tipo'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Tipos]
+      summary: Actualizar tipo
+      operationId: actualizarTipo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TipoCreate'
+      responses:
+        '200':
+          description: Tipo actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tipo'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Tipos]
+      summary: Eliminar tipo
+      operationId: eliminarTipo
+      responses:
+        '204':
+          description: Tipo eliminado
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ──────────────────── BUSES ────────────────────
+  /buses:
+    get:
+      tags: [Buses]
+      summary: Listar buses de la flota
+      operationId: listarBuses
+      responses:
+        '200':
+          description: Lista de buses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Bus'
+    post:
+      tags: [Buses]
+      summary: Registrar un bus
+      operationId: crearBus
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BusCreate'
+      responses:
+        '201':
+          description: Bus creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bus'
+
+  /buses/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    get:
+      tags: [Buses]
+      summary: Obtener bus por ID
+      operationId: obtenerBus
+      responses:
+        '200':
+          description: Bus encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bus'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Buses]
+      summary: Actualizar bus
+      operationId: actualizarBus
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BusCreate'
+      responses:
+        '200':
+          description: Bus actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bus'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Buses]
+      summary: Dar de baja bus
+      operationId: eliminarBus
+      responses:
+        '204':
+          description: Bus dado de baja
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ──────────────────── PERSONAL ────────────────────
+  /personal:
+    get:
+      tags: [Personal]
+      summary: Listar personal
+      operationId: listarPersonal
+      parameters:
+        - name: tipo
+          in: query
+          schema:
+            type: string
+            enum: [chofer, ayudante, administrativo]
+          description: Filtrar por tipo de personal
+      responses:
+        '200':
+          description: Lista de personal
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Personal'
+    post:
+      tags: [Personal]
+      summary: Registrar personal
+      operationId: crearPersonal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonalCreate'
+      responses:
+        '201':
+          description: Personal creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Personal'
+
+  /personal/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    get:
+      tags: [Personal]
+      summary: Obtener personal por ID
+      operationId: obtenerPersonal
+      responses:
+        '200':
+          description: Personal encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Personal'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Personal]
+      summary: Actualizar personal
+      operationId: actualizarPersonal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonalUpdate'
+      responses:
+        '200':
+          description: Personal actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Personal'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Personal]
+      summary: Desactivar personal
+      operationId: eliminarPersonal
+      responses:
+        '204':
+          description: Personal desactivado
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ──────────────────── VIAJES ────────────────────
+  /viajes:
+    get:
+      tags: [Viajes]
+      summary: Listar viajes programados
+      operationId: listarViajes
+      parameters:
+        - name: estado
+          in: query
+          schema:
+            type: string
+            enum: [programado, en_venta, en_ruta, completado, cancelado]
+        - name: fecha
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filtrar por fecha de salida
+      responses:
+        '200':
+          description: Lista de viajes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Viaje'
+    post:
+      tags: [Viajes]
+      summary: Crear viaje (genera mapa de asientos automáticamente)
+      operationId: crearViaje
+      description: >
+        Crea un viaje asignando ruta, bus, chofer y ayudante.
+        El sistema genera automáticamente la matriz de asientos
+        basada en el Tipo del bus asignado (HU-005 + HU-006).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ViajeCreate'
+      responses:
+        '201':
+          description: Viaje creado con asientos generados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViajeDetalle'
+        '409':
+          description: Bus ya asignado a otro viaje en ese horario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /viajes/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    get:
+      tags: [Viajes]
+      summary: Obtener viaje con asientos
+      operationId: obtenerViaje
+      responses:
+        '200':
+          description: Viaje con mapa de asientos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViajeDetalle'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /viajes/{id}/publicar:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    patch:
+      tags: [Viajes]
+      summary: Publicar viaje para venta (HU-007)
+      operationId: publicarViaje
+      description: >
+        Cambia el estado del viaje de "programado" a "en_venta".
+      responses:
+        '200':
+          description: Viaje publicado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Viaje'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: El viaje no está en estado programado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /viajes/{id}/asientos:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    get:
+      tags: [Viajes]
+      summary: Listar asientos del viaje
+      operationId: listarAsientos
+      responses:
+        '200':
+          description: Mapa de asientos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Asiento'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+# ═══════════════════════════════════════════════════════════════════════
+#  COMPONENTS
+# ═══════════════════════════════════════════════════════════════════════
+components:
+
+  parameters:
+    IdPath:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+
+  responses:
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+
+    # ── Genéricos ──
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+    # ── Ciudad ──
+    Ciudad:
+      type: object
+      properties:
+        id:
+          type: integer
+        nombre:
+          type: string
+        codigo:
+          type: string
+        region:
+          type: string
+        estado:
+          type: string
+          enum: [activo, inactivo]
+      required: [id, nombre, codigo, region, estado]
+
+    CiudadCreate:
+      type: object
+      properties:
+        nombre:
+          type: string
+          minLength: 1
+        codigo:
+          type: string
+          minLength: 1
+        region:
+          type: string
+          minLength: 1
+      required: [nombre, codigo, region]
+
+    # ── Ruta ──
+    Ruta:
+      type: object
+      properties:
+        id:
+          type: integer
+        nombre:
+          type: string
+        ciudad_origen_id:
+          type: integer
+        ciudad_destino_id:
+          type: integer
+        distancia_km:
+          type: integer
+        tiempo_estimado:
+          type: integer
+          description: Minutos
+        estado:
+          type: string
+          enum: [activo, inactivo]
+      required: [id, nombre, ciudad_origen_id, ciudad_destino_id]
+
+    RutaCreate:
+      type: object
+      properties:
+        nombre:
+          type: string
+          minLength: 1
+        ciudad_origen_id:
+          type: integer
+        ciudad_destino_id:
+          type: integer
+        distancia_km:
+          type: integer
+          minimum: 0
+        tiempo_estimado:
+          type: integer
+          minimum: 0
+          description: Minutos
+        paradas:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParadaCreate'
+      required: [nombre, ciudad_origen_id, ciudad_destino_id]
+
+    ParadaCreate:
+      type: object
+      properties:
+        ciudad_id:
+          type: integer
+        orden:
+          type: integer
+          minimum: 1
+        distancia_acumulada:
+          type: integer
+          minimum: 0
+      required: [ciudad_id, orden]
+
+    RutaDetalle:
+      allOf:
+        - $ref: '#/components/schemas/Ruta'
+        - type: object
+          properties:
+            paradas:
+              type: array
+              items:
+                $ref: '#/components/schemas/ParadaIntermedia'
+
+    ParadaIntermedia:
+      type: object
+      properties:
+        id:
+          type: integer
+        ruta_id:
+          type: integer
+        ciudad_id:
+          type: integer
+        orden:
+          type: integer
+        distancia_acumulada:
+          type: integer
+        ciudad_nombre:
+          type: string
+
+    # ── Tipo ──
+    Tipo:
+      type: object
+      properties:
+        id:
+          type: integer
+        nombre:
+          type: string
+        capacidad:
+          type: integer
+        pisos:
+          type: integer
+      required: [id, nombre, capacidad, pisos]
+
+    TipoCreate:
+      type: object
+      properties:
+        nombre:
+          type: string
+          minLength: 1
+        capacidad:
+          type: integer
+          minimum: 1
+        pisos:
+          type: integer
+          minimum: 1
+      required: [nombre, capacidad, pisos]
+
+    # ── Bus ──
+    Bus:
+      type: object
+      properties:
+        id:
+          type: integer
+        placa:
+          type: string
+        numero_unidad:
+          type: string
+        tipo_id:
+          type: integer
+        estado:
+          type: string
+          enum: [activo, mantenimiento, baja]
+        fecha_registro:
+          type: string
+          format: date
+      required: [id, placa, numero_unidad, tipo_id, estado]
+
+    BusCreate:
+      type: object
+      properties:
+        placa:
+          type: string
+          minLength: 1
+        numero_unidad:
+          type: string
+          minLength: 1
+        tipo_id:
+          type: integer
+        estado:
+          type: string
+          enum: [activo, mantenimiento, baja]
+      required: [placa, numero_unidad, tipo_id]
+
+    # ── Personal ──
+    Personal:
+      type: object
+      description: >
+        Nota: password_hash NUNCA se incluye en respuestas.
+      properties:
+        id:
+          type: integer
+        nombre_completo:
+          type: string
+        documento_identidad:
+          type: string
+        tipo_personal:
+          type: string
+          enum: [chofer, ayudante, administrativo]
+        licencia_conducir:
+          type: string
+          nullable: true
+        estado:
+          type: string
+          enum: [activo, inactivo, licencia_suspendida]
+        fecha_registro:
+          type: string
+          format: date
+      required:
+        - id
+        - nombre_completo
+        - documento_identidad
+        - tipo_personal
+        - estado
+
+    PersonalCreate:
+      type: object
+      properties:
+        nombre_completo:
+          type: string
+          minLength: 1
+        documento_identidad:
+          type: string
+          minLength: 1
+        tipo_personal:
+          type: string
+          enum: [chofer, ayudante, administrativo]
+        licencia_conducir:
+          type: string
+          nullable: true
+        password:
+          type: string
+          minLength: 6
+          description: Se hashea antes de almacenar
+      required:
+        - nombre_completo
+        - documento_identidad
+        - tipo_personal
+        - password
+
+    PersonalUpdate:
+      type: object
+      properties:
+        nombre_completo:
+          type: string
+        documento_identidad:
+          type: string
+        tipo_personal:
+          type: string
+          enum: [chofer, ayudante, administrativo]
+        licencia_conducir:
+          type: string
+          nullable: true
+        estado:
+          type: string
+          enum: [activo, inactivo, licencia_suspendida]
+        password:
+          type: string
+          minLength: 6
+          description: Opcional. Si se envía, se re-hashea
+
+    # ── Viaje ──
+    Viaje:
+      type: object
+      properties:
+        id:
+          type: integer
+        ruta_id:
+          type: integer
+        bus_id:
+          type: integer
+        chofer_id:
+          type: integer
+        ayudante_id:
+          type: integer
+        fecha_salida:
+          type: string
+          format: date
+        hora_salida:
+          type: string
+          description: "HH:MM"
+        estado:
+          type: string
+          enum: [programado, en_venta, en_ruta, completado, cancelado]
+        tarifa_base:
+          type: string
+          description: "DECIMAL(10,2) serializado como string"
+        fecha_creacion:
+          type: string
+          format: date-time
+      required:
+        - id
+        - ruta_id
+        - bus_id
+        - chofer_id
+        - ayudante_id
+        - fecha_salida
+        - hora_salida
+        - estado
+
+    ViajeCreate:
+      type: object
+      properties:
+        ruta_id:
+          type: integer
+        bus_id:
+          type: integer
+        chofer_id:
+          type: integer
+        ayudante_id:
+          type: integer
+        fecha_salida:
+          type: string
+          format: date
+        hora_salida:
+          type: string
+          description: "HH:MM"
+        tarifa_base:
+          type: string
+          description: "DECIMAL(10,2) como string, ej: '150.00'"
+      required:
+        - ruta_id
+        - bus_id
+        - chofer_id
+        - ayudante_id
+        - fecha_salida
+        - hora_salida
+        - tarifa_base
+
+    ViajeDetalle:
+      allOf:
+        - $ref: '#/components/schemas/Viaje'
+        - type: object
+          properties:
+            asientos:
+              type: array
+              items:
+                $ref: '#/components/schemas/Asiento'
+
+    # ── Asiento ──
+    Asiento:
+      type: object
+      properties:
+        id:
+          type: integer
+        viaje_id:
+          type: integer
+        numero_asiento:
+          type: string
+        fila:
+          type: integer
+        columna:
+          type: integer
+        piso:
+          type: integer
+        estado:
+          type: string
+          enum: [disponible, en_proceso, ocupado, no_show]
+        pasajero_id:
+          type: integer
+          nullable: true
+        version:
+          type: integer
+          description: Bloqueo optimista (inicia en 1)
+      required:
+        - id
+        - viaje_id
+        - numero_asiento
+        - fila
+        - columna
+        - piso
+        - estado
+        - version
