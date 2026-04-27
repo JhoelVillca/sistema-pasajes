@@ -11,6 +11,7 @@ const tipoCtrl     = require('./tipoController');
 const busCtrl      = require('./busController');
 const personalCtrl = require('./personalController');
 const viajeCtrl    = require('./viajeController');
+const boletoCtrl   = require('./boletoController');
 
 const router = Router();
 
@@ -55,5 +56,8 @@ router.post('/viajes',             viajeCtrl.crear);
 router.get('/viajes/:id',          viajeCtrl.obtener);
 router.patch('/viajes/:id/publicar', viajeCtrl.publicar);
 router.get('/viajes/:id/asientos', viajeCtrl.listarAsientos);
+
+// ── Boletos — Etapa 3 (HU-010 a HU-014) ──
+router.post('/boletos',            boletoCtrl.crear);
 
 module.exports = router;

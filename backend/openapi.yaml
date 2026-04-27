@@ -24,6 +24,8 @@ tags:
     description: CRUD del personal operativo (HU-004)
   - name: Viajes
     description: Creación y gestión de viajes (HU-005, HU-006, HU-007)
+  - name: Boletos
+    description: Venta de pasajes con bloqueo optimista (HU-010 a HU-014)
 
 # ═══════════════════════════════════════════════════════════════════════
 #  PATHS
@@ -549,6 +551,51 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  # ──────────────────── BOLETOS (Etapa 3) ────────────────────
+  /boletos:
+    post:
+      tags: [Boletos]
+      summary: Vender un pasaje (compra con bloqueo optimista)
+      operationId: crearBoleto
+      description: >
+        Crea un boleto vinculando viaje, asiento y pasajero.
+        Implementa Bloqueo Optimista (HU-014): el cliente DEBE enviar
+        version_asiento con el valor leído al consultar el mapa.
+        Si la versión no coincide → 409 Conflict.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BoletoCreate'
+      responses:
+        '201':
+          description: Boleto emitido exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BoletoResponse'
+        '400':
+          description: Campos requeridos faltantes o inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Viaje o asiento no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: >
+            Conflicto de concurrencia — el asiento fue modificado por
+            otro vendedor. El cliente debe recargar el mapa de asientos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 # ═══════════════════════════════════════════════════════════════════════
 #  COMPONENTS
 # ═══════════════════════════════════════════════════════════════════════
@@ -949,3 +996,159 @@ components:
         - piso
         - estado
         - version
+
+    # ── Pasajero ──
+    Pasajero:
+      type: object
+      properties:
+        id:
+          type: integer
+        nombre_completo:
+          type: string
+        tipo_documento:
+          type: string
+        numero_documento:
+          type: string
+        telefono:
+          type: string
+          nullable: true
+        correo:
+          type: string
+          nullable: true
+        fecha_registro:
+          type: string
+          format: date
+      required: [id, nombre_completo, tipo_documento, numero_documento]
+
+    PasajeroInline:
+      type: object
+      description: Datos del pasajero para crear si no existe
+      properties:
+        nombre_completo:
+          type: string
+          minLength: 1
+        tipo_documento:
+          type: string
+          minLength: 1
+        numero_documento:
+          type: string
+          minLength: 1
+        telefono:
+          type: string
+          nullable: true
+        correo:
+          type: string
+          nullable: true
+      required: [nombre_completo, tipo_documento, numero_documento]
+
+    # ── Boleto ──
+    Boleto:
+      type: object
+      properties:
+        id:
+          type: integer
+        codigo_unico:
+          type: string
+        viaje_id:
+          type: integer
+        asiento_id:
+          type: integer
+        pasajero_id:
+          type: integer
+        ciudad_subida_id:
+          type: integer
+        ciudad_bajada_id:
+          type: integer
+        tarifa_pagada:
+          type: string
+          description: "DECIMAL(10,2) serializado como string"
+        fecha_emision:
+          type: string
+          format: date-time
+        estado:
+          type: string
+          enum: [emitido, anulado, usado]
+      required:
+        - id
+        - codigo_unico
+        - viaje_id
+        - asiento_id
+        - pasajero_id
+        - tarifa_pagada
+        - estado
+
+    BoletoCreate:
+      type: object
+      description: >
+        Request de compra. Incluye version_asiento para bloqueo
+        optimista. El pasajero puede enviarse como ID existente
+        (pasajero_id) o como objeto inline (pasajero) para crearlo.
+      properties:
+        viaje_id:
+          type: integer
+        asiento_id:
+          type: integer
+        pasajero_id:
+          type: integer
+          description: ID de pasajero existente (opcional si se envía pasajero)
+        pasajero:
+          $ref: '#/components/schemas/PasajeroInline'
+        ciudad_subida_id:
+          type: integer
+        ciudad_bajada_id:
+          type: integer
+        tarifa_pagada:
+          type: string
+          description: "DECIMAL(10,2) como string, ej: '150.00'"
+        version_asiento:
+          type: integer
+          description: >
+            OBLIGATORIO. Versión del asiento leída por el cliente.
+            Si no coincide con la versión actual → 409 Conflict.
+        metodo_pago:
+          type: string
+          enum: [efectivo, tarjeta, transferencia]
+        vendedor_id:
+          type: integer
+          description: ID del personal que realiza la venta
+      required:
+        - viaje_id
+        - asiento_id
+        - ciudad_subida_id
+        - ciudad_bajada_id
+        - tarifa_pagada
+        - version_asiento
+        - metodo_pago
+        - vendedor_id
+
+    BoletoResponse:
+      type: object
+      description: Boleto emitido con datos de pago incluidos
+      properties:
+        boleto:
+          $ref: '#/components/schemas/Boleto'
+        pago:
+          $ref: '#/components/schemas/PagoInfo'
+        asiento:
+          $ref: '#/components/schemas/Asiento'
+
+    PagoInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+        boleto_id:
+          type: integer
+        monto:
+          type: string
+          description: "DECIMAL(10,2)"
+        metodo_pago:
+          type: string
+          enum: [efectivo, tarjeta, transferencia]
+        numero_comprobante:
+          type: string
+        fecha_pago:
+          type: string
+          format: date-time
+        vendedor_id:
+          type: integer
