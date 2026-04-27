@@ -1,0 +1,33 @@
+node_modules/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build / runtime output
+dist/
+build/
+coverage/
+
+# SQLite local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Nodemon / cache
+.nodemon*
+.cache/
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+.vscode/
