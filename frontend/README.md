@@ -129,7 +129,7 @@ Vista principal del sistema de venta de pasajes con flujo de compra integrado.
    - Info del viaje (ruta, número de asiento, tarifa)
    - Formulario: nombre completo, tipo documento (CI/Pasaporte), número documento, método de pago
 3. Al confirmar, se envía `POST /boletos` con `version_asiento` del asiento original
-4. **Si 201 (éxito):** toast verde → `"✅ Boleto BOL-XXXX emitido"` + cierra modal + refresca asientos
+4. **Si 201 (éxito):** Muestra el **Pase de Abordaje (Ticket)** en el modal con un Código QR autogenerado (vía `api.qrserver.com`), datos del pasajero y botón de "Imprimir y Nueva Venta".
 5. **Si 409 (conflicto):** toast rojo/naranja con pulso agresivo → `"¡Asiento vendido a otro usuario!"` + cierra modal + refresca asientos automáticamente
 6. **Si otro error:** toast rojo con mensaje del servidor
 

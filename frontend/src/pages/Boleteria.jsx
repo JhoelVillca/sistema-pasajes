@@ -43,6 +43,9 @@ export default function Boleteria() {
   // Alertas toast
   const [toast, setToast] = useState(null); // { type: 'success'|'error'|'conflict', message }
 
+  // Boleto Emitido (Pase de abordaje)
+  const [boletoEmitido, setBoletoEmitido] = useState(null);
+
   // ── Fetch inicial ──
   useEffect(() => {
     fetchData();
@@ -158,7 +161,16 @@ export default function Boleteria() {
       showToast('success',
         `✅ Boleto ${result.boleto.codigo_unico} emitido — Asiento ${asiento.numero_asiento}`
       );
-      closeModal();
+      
+      // Guardar para renderizar el Pase de Abordaje
+      setBoletoEmitido({
+        id: result.boleto.id,
+        codigo: result.boleto.codigo_unico,
+        pasajero: form.nombre_completo.trim(),
+        ci: form.numero_documento.trim(),
+        asiento: asiento.numero_asiento,
+        ruta: getRutaNombre(viaje.ruta_id)
+      });
 
       // Refrescar asientos
       await refreshAsientos(viaje.id);
@@ -403,104 +415,133 @@ export default function Boleteria() {
             </div>
 
             {/* Formulario */}
-            <form onSubmit={handleComprar} className="modal-form">
-              <div className="form-group">
-                <label className="form-label" htmlFor="nombre_completo">
-                  Nombre completo del pasajero
-                </label>
-                <input
-                  id="nombre_completo"
-                  name="nombre_completo"
-                  type="text"
-                  className="form-input"
-                  placeholder="Ej: Juan Pérez"
-                  value={form.nombre_completo}
-                  onChange={handleFormChange}
-                  required
-                  autoFocus
-                  disabled={buying}
-                />
-              </div>
-
-              <div className="form-row-2">
+            {!boletoEmitido ? (
+              <form onSubmit={handleComprar} className="modal-form">
                 <div className="form-group">
-                  <label className="form-label" htmlFor="tipo_documento">
-                    Tipo documento
-                  </label>
-                  <select
-                    id="tipo_documento"
-                    name="tipo_documento"
-                    className="form-input form-select"
-                    value={form.tipo_documento}
-                    onChange={handleFormChange}
-                    disabled={buying}
-                  >
-                    <option value="CI">CI</option>
-                    <option value="Pasaporte">Pasaporte</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label" htmlFor="numero_documento">
-                    Nro. documento
+                  <label className="form-label" htmlFor="nombre_completo">
+                    Nombre completo del pasajero
                   </label>
                   <input
-                    id="numero_documento"
-                    name="numero_documento"
+                    id="nombre_completo"
+                    name="nombre_completo"
                     type="text"
                     className="form-input"
-                    placeholder="Ej: 1234567"
-                    value={form.numero_documento}
+                    placeholder="Ej: Juan Pérez"
+                    value={form.nombre_completo}
                     onChange={handleFormChange}
                     required
+                    autoFocus
                     disabled={buying}
                   />
                 </div>
-              </div>
 
-              <div className="form-group">
-                <label className="form-label" htmlFor="metodo_pago">
-                  Método de pago
-                </label>
-                <select
-                  id="metodo_pago"
-                  name="metodo_pago"
-                  className="form-input form-select"
-                  value={form.metodo_pago}
-                  onChange={handleFormChange}
-                  disabled={buying}
-                >
-                  <option value="efectivo">💵 Efectivo</option>
-                  <option value="tarjeta">💳 Tarjeta</option>
-                  <option value="transferencia">🏦 Transferencia</option>
-                </select>
-              </div>
+                <div className="form-row-2">
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="tipo_documento">
+                      Tipo documento
+                    </label>
+                    <select
+                      id="tipo_documento"
+                      name="tipo_documento"
+                      className="form-input form-select"
+                      value={form.tipo_documento}
+                      onChange={handleFormChange}
+                      disabled={buying}
+                    >
+                      <option value="CI">CI</option>
+                      <option value="Pasaporte">Pasaporte</option>
+                    </select>
+                  </div>
 
-              {/* Botones */}
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  className="btn btn-ghost"
-                  onClick={closeModal}
-                  disabled={buying}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={buying}
-                >
-                  {buying ? (
-                    <>
-                      <span className="spinner-sm" /> Procesando…
-                    </>
-                  ) : (
-                    '🎫 Confirmar Compra'
-                  )}
-                </button>
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="numero_documento">
+                      Nro. documento
+                    </label>
+                    <input
+                      id="numero_documento"
+                      name="numero_documento"
+                      type="text"
+                      className="form-input"
+                      placeholder="Ej: 1234567"
+                      value={form.numero_documento}
+                      onChange={handleFormChange}
+                      required
+                      disabled={buying}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label" htmlFor="metodo_pago">
+                    Método de pago
+                  </label>
+                  <select
+                    id="metodo_pago"
+                    name="metodo_pago"
+                    className="form-input form-select"
+                    value={form.metodo_pago}
+                    onChange={handleFormChange}
+                    disabled={buying}
+                  >
+                    <option value="efectivo">💵 Efectivo</option>
+                    <option value="tarjeta">💳 Tarjeta</option>
+                    <option value="transferencia">🏦 Transferencia</option>
+                  </select>
+                </div>
+
+                {/* Botones */}
+                <div className="modal-actions">
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={closeModal}
+                    disabled={buying}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={buying}
+                  >
+                    {buying ? (
+                      <>
+                        <span className="spinner-sm" /> Procesando…
+                      </>
+                    ) : (
+                      '🎫 Confirmar Compra'
+                    )}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="modal-form" style={{ textAlign: 'center' }}>
+                <div style={{ background: '#fff', padding: '15px', display: 'inline-block', borderRadius: '10px', marginBottom: '15px' }}>
+                  <img 
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BOLETO-${boletoEmitido.id}-${boletoEmitido.ci}`} 
+                    alt="QR de Abordaje" 
+                  />
+                </div>
+                
+                <h3 style={{ color: 'var(--color-accent-light)', marginBottom: '5px' }}>{boletoEmitido.codigo}</h3>
+                <p style={{ margin: '5px 0' }}><strong>Pasajero:</strong> {boletoEmitido.pasajero} ({boletoEmitido.ci})</p>
+                <p style={{ margin: '5px 0' }}><strong>Ruta:</strong> {boletoEmitido.ruta}</p>
+                <p style={{ margin: '5px 0' }}><strong>Asiento:</strong> {boletoEmitido.asiento}</p>
+                
+                <div className="modal-actions" style={{ marginTop: '20px', justifyContent: 'center' }}>
+                  <button 
+                    type="button" 
+                    className="btn btn-primary" 
+                    onClick={() => {
+                      setBoletoEmitido(null);
+                      closeModal();
+                    }}
+                  >
+                    🖨️ Imprimir y Nueva Venta
+                  </button>
+                </div>
               </div>
-            </form>
+            )}
           </div>
         </div>
       )}
