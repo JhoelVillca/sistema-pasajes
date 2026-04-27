@@ -551,6 +551,25 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /viajes/{id}/boletos:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    get:
+      tags: [Viajes]
+      summary: Listar boletos vendidos de un viaje (Etapa 5)
+      operationId: listarBoletosViaje
+      responses:
+        '200':
+          description: Lista de boletos del viaje
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BoletoViaje'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   # ──────────────────── BOLETOS (Etapa 3) ────────────────────
   /boletos:
     post:
@@ -595,6 +614,84 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
+  # ──────────────────── DESPACHOS (Etapa 5) ────────────────────
+  /despachos:
+    post:
+      tags: [Despachos]
+      summary: Crear despacho y validar boletos
+      operationId: crearDespacho
+      description: >
+        Crea el despacho (estado 'iniciado') y automáticamente inserta todos los
+        boletos del viaje en despacho_pasajero con estado_presencia = 'ausente'.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DespachoCreate'
+      responses:
+        '201':
+          description: Despacho creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Despacho'
+        '400':
+          $ref: '#/components/responses/NotFound'
+
+  /despachos/{id}/pasajeros/{boleto_id}:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+      - name: boleto_id
+        in: path
+        required: true
+        schema:
+          type: integer
+    patch:
+      tags: [Despachos]
+      summary: Actualizar estado de presencia de un pasajero
+      operationId: actualizarPresencia
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                estado_presencia:
+                  type: string
+                  enum: [presente, ausente, no_show]
+              required: [estado_presencia]
+      responses:
+        '200':
+          description: Presencia actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DespachoPasajero'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /despachos/{id}/finalizar:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    patch:
+      tags: [Despachos]
+      summary: Finalizar despacho (El bus arranca)
+      operationId: finalizarDespacho
+      description: >
+        Cambia el estado del despacho a 'despachado' y CRÍTICAMENTE
+        cambia el estado del viaje asociado a 'en_ruta'.
+      responses:
+        '200':
+          description: Despacho finalizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Despacho'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
 # ═══════════════════════════════════════════════════════════════════════
 #  COMPONENTS
@@ -1152,3 +1249,61 @@ components:
           format: date-time
         vendedor_id:
           type: integer
+
+    BoletoViaje:
+      type: object
+      description: Dato simplificado del boleto para el despachador
+      properties:
+        id:
+          type: integer
+        codigo_unico:
+          type: string
+        asiento_id:
+          type: integer
+        numero_asiento:
+          type: string
+        nombre_pasajero:
+          type: string
+        numero_documento:
+          type: string
+
+    Despacho:
+      type: object
+      properties:
+        id:
+          type: integer
+        viaje_id:
+          type: integer
+        despachador_id:
+          type: integer
+        fecha_despacho:
+          type: string
+        estado:
+          type: string
+          enum: [iniciado, tripulacion_validada, pasajeros_validados, despachado]
+        observaciones:
+          type: string
+
+    DespachoCreate:
+      type: object
+      properties:
+        viaje_id:
+          type: integer
+        despachador_id:
+          type: integer
+      required: [viaje_id, despachador_id]
+
+    DespachoPasajero:
+      type: object
+      properties:
+        id:
+          type: integer
+        despacho_id:
+          type: integer
+        boleto_id:
+          type: integer
+        estado_presencia:
+          type: string
+          enum: [presente, ausente, no_show]
+        hora_validacion:
+          type: string

@@ -12,6 +12,7 @@ const busCtrl      = require('./busController');
 const personalCtrl = require('./personalController');
 const viajeCtrl    = require('./viajeController');
 const boletoCtrl   = require('./boletoController');
+const despachoCtrl = require('./despachoController');
 
 const router = Router();
 
@@ -59,5 +60,11 @@ router.get('/viajes/:id/asientos', viajeCtrl.listarAsientos);
 
 // ── Boletos — Etapa 3 (HU-010 a HU-014) ──
 router.post('/boletos',            boletoCtrl.crear);
+
+// ── Despachos — Etapa 5 ──
+router.get('/viajes/:id/boletos',  despachoCtrl.listarBoletosViaje);
+router.post('/despachos',          despachoCtrl.crearDespacho);
+router.patch('/despachos/:id/pasajeros/:boleto_id', despachoCtrl.actualizarPresencia);
+router.patch('/despachos/:id/finalizar', despachoCtrl.finalizarDespacho);
 
 module.exports = router;

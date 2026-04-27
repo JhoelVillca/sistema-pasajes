@@ -161,6 +161,15 @@ Todos los endpoints están bajo el prefijo `/api`. El contrato formal está en `
 |---|---|---|---|
 | `POST` | `/api/boletos` | 201 / 400 / 404 / 409 | Vender pasaje con bloqueo optimista |
 
+### Despachos — Etapa 5
+
+| Método | Ruta | Status | Descripción |
+|---|---|---|---|
+| `GET` | `/api/viajes/:id/boletos` | 200 / 404 | Listar boletos vendidos de un viaje |
+| `POST` | `/api/despachos` | 201 / 400 / 409 | Crear despacho y cargar pasajeros (`ausente`) |
+| `PATCH` | `/api/despachos/:id/pasajeros/:boleto_id` | 200 / 404 | Marcar pasajero (presente/ausente/no_show) |
+| `PATCH` | `/api/despachos/:id/finalizar` | 200 / 404 | Finalizar despacho y poner viaje `en_ruta` |
+
 **Request body (`BoletoCreate`):**
 
 ```json
