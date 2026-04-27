@@ -171,6 +171,19 @@ Vista de programación y publicación de viajes (HU-005, HU-006, HU-007). Diseñ
 - **Acción de Publicación:** Si un viaje está en estado `programado`, muestra un botón `📢 Publicar`.
 - Al publicar (PATCH `/viajes/:id/publicar`), el viaje pasa a estado `en_venta` y desaparece el botón de publicación, haciéndolo visible en la pantalla de Boletería.
 
+### 🚌 Despachos (`/despachos`) — **Implementado (Fase 10)**
+
+Control de Abordaje y salida de viajes (Etapa 5). Funciona con dos estados:
+
+**1. Estado de Selección:**
+- Muestra una grilla con todos los viajes que están en estado `en_venta`.
+- Permite hacer clic en "Iniciar Despacho" (POST `/despachos`). Si el despacho ya había sido iniciado previamente (409 Conflict), el sistema retoma la sesión automáticamente.
+
+**2. Estado de Control de Abordaje:**
+- Lista completa de todos los pasajeros (boletos emitidos) del viaje, indicando su asiento y documento de identidad.
+- Botones de acción rápida para marcar presencia (`Presente`, `Ausente`, `No Show`) guardando el estado inmediatamente vía PATCH.
+- **Finalizar y Despachar:** Botón que llama a PATCH `/despachos/:id/finalizar`. Una vez exitoso, el viaje cambia su estado a `en_ruta` y desaparece de la selección de Despachos y Boletería.
+
 ---
 
 ## Design System

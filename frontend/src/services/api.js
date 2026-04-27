@@ -57,4 +57,11 @@ export const getAsientos       = (viajeId) => api.get(`/viajes/${viajeId}/asient
 // ── Boletos (Etapa 3) ──
 export const comprarBoleto     = (data) => api.post('/boletos', data).then(r => r.data);
 
+// ── Despachos (Etapa 5) ──
+export const getBoletosViaje   = (viajeId) => api.get(`/viajes/${viajeId}/boletos`).then(r => r.data);
+export const crearDespacho     = (data) => api.post('/despachos', data).then(r => r.data);
+export const actualizarPresencia = (despachoId, boletoId, estadoPresencia) => 
+  api.patch(`/despachos/${despachoId}/pasajeros/${boletoId}`, { estado_presencia }).then(r => r.data);
+export const finalizarDespacho = (despachoId) => api.patch(`/despachos/${despachoId}/finalizar`).then(r => r.data);
+
 export default api;

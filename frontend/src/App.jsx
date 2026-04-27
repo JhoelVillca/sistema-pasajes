@@ -7,6 +7,7 @@ import './App.css';
 import Boleteria from './pages/Boleteria';
 import Catalogos from './pages/Catalogos';
 import Viajes from './pages/Viajes';
+import Despachos from './pages/Despachos';
 
 function Layout({ children }) {
   return (
@@ -43,6 +44,14 @@ function Layout({ children }) {
                 🎫 Boletería
               </NavLink>
             </li>
+            <li>
+              <NavLink
+                to="/despachos"
+                className={({ isActive }) => `navbar-link ${isActive ? 'active' : ''}`}
+              >
+                🚌 Despachos
+              </NavLink>
+            </li>
           </ul>
         </div>
       </nav>
@@ -65,6 +74,7 @@ export default function App() {
           <Route path="/catalogos" element={<Catalogos />} />
           <Route path="/viajes" element={<Viajes />} />
           <Route path="/boleteria" element={<Boleteria />} />
+          <Route path="/despachos" element={<Despachos />} />
         </Routes>
       </Layout>
     </BrowserRouter>
