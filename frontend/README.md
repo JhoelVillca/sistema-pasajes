@@ -139,9 +139,22 @@ Vista principal del sistema de venta de pasajes con flujo de compra integrado.
 - 📭 Vacío: mensaje informativo
 - 🔄 Compra en progreso: botón deshabilitado + spinner inline
 
-### 📋 Catálogos (`/catalogos`) — Placeholder
+### 📋 Catálogos (`/catalogos`) — **Implementado completo (Fase 7)**
 
-Muestra tarjetas para cada módulo de catálogo (Ciudades, Rutas, Tipos, Buses, Personal) con referencias a las Historias de Usuario correspondientes.
+Vista para la gestión de datos maestros con pestañas navegables y un componente genérico reutilizable (`CrudPanel`).
+
+**Funcionalidad:**
+- **Pestañas (Tabs):** Navegación rápida entre entidades (Ciudades, Rutas, Tipos, Buses, Personal).
+- **Componente `CrudPanel`:** Abstracción reutilizable que recibe configuraciones y maneja:
+  - Listado de registros (Tabla de datos).
+  - Formulario en Modal (Creación y Edición).
+  - Confirmación nativa de Eliminación.
+  - Notificaciones Toast (Éxito, Conflicto, Error).
+  - Estados de Carga y Vacío.
+- **Lógica específica por entidad:**
+  - **Rutas (HU-002):** Selects de "Origen" y "Destino" poblados asíncronamente con el catálogo de Ciudades.
+  - **Buses (HU-003):** Select de "Tipo" poblado con el catálogo de Tipos de Bus.
+  - **Personal (HU-004):** Password requerido al crear, pero opcional (no se envía si está vacío) al editar.
 
 ### 🗓️ Viajes (`/viajes`) — Placeholder
 
