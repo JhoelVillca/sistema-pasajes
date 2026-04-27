@@ -31,11 +31,11 @@ const ciudadController = {
   // POST /api/ciudades → 201 | 409
   async crear(req, res) {
     try {
-      const { nombre, codigo, region } = req.body;
+      const { nombre, codigo, region, estado } = req.body;
       if (!nombre || !codigo || !region) {
         return res.status(400).json({ error: 'Campos requeridos: nombre, codigo, region' });
       }
-      const ciudad = await repo.create({ nombre, codigo, region });
+      const ciudad = await repo.create({ nombre, codigo, region, estado: estado || 'activo' });
       res.status(201).json(ciudad);
     } catch (err) {
       if (err.message.includes('UNIQUE')) {
@@ -51,11 +51,11 @@ const ciudadController = {
       const existing = await repo.findById(req.params.id);
       if (!existing) return res.status(404).json({ error: 'Ciudad no encontrada' });
 
-      const { nombre, codigo, region } = req.body;
+      const { nombre, codigo, region, estado } = req.body;
       if (!nombre || !codigo || !region) {
         return res.status(400).json({ error: 'Campos requeridos: nombre, codigo, region' });
       }
-      const ciudad = await repo.update(req.params.id, { nombre, codigo, region });
+      const ciudad = await repo.update(req.params.id, { nombre, codigo, region, estado });
       res.json(ciudad);
     } catch (err) {
       if (err.message.includes('UNIQUE')) {

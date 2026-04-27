@@ -66,8 +66,12 @@ export default function Catalogos() {
       { name: 'nombre', label: 'Nombre', type: 'text', required: true, placeholder: 'Ej: La Paz' },
       { name: 'codigo', label: 'Código', type: 'text', required: true, placeholder: 'Ej: LPZ' },
       { name: 'region', label: 'Región', type: 'text', required: true, placeholder: 'Ej: Altiplano' },
+      { name: 'estado', label: 'Estado', type: 'select', options: [
+        { value: 'activo', label: 'Activo' },
+        { value: 'inactivo', label: 'Inactivo' },
+      ]},
     ],
-    emptyForm: { nombre: '', codigo: '', region: '' },
+    emptyForm: { nombre: '', codigo: '', region: '', estado: 'activo' },
     apiFns: { list: getCiudades, create: createCiudad, update: updateCiudad, remove: deleteCiudad },
   };
 

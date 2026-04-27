@@ -378,3 +378,7 @@ Invoke-RestMethod -Uri http://localhost:3000/api/boletos -Method POST `
 ```
 
 **Resultado esperado:** Vendedor A obtiene el boleto. Vendedor B recibe un 409 y debe recargar el mapa.
+
+## Bugfixes Recientes
+- **Despachos (Referencia no definida):** Se corrigió la llamada al endpoint de actualización de presencia donde se enviaba una variable no definida (`estado_presencia` en lugar del parámetro `estadoPresencia`), restaurando la capacidad de actualizar el estado de los pasajeros en el abordaje.
+- **Catálogos (Restauración de estado):** Se añadió soporte a `PUT /ciudades/:id` para aceptar el campo `estado`, y se expuso un toggle (Select) en el panel administrativo de React (`Catalogos.jsx`) para permitir a los operadores cambiar explícitamente una ciudad de `inactivo` a `activo`, cumpliendo con el requisito sin romper el *soft-delete* subyacente.
