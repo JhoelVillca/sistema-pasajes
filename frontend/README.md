@@ -99,14 +99,15 @@ Instancia centralizada de Axios apuntando a `http://localhost:3000/api`. Todas l
 | `createViaje(data)` | `/viajes` | POST |
 | `publicarViaje(id)` | `/viajes/:id/publicar` | PATCH |
 | `getAsientos(viajeId)` | `/viajes/:id/asientos` | GET |
+| `comprarBoleto(data)` | `/boletos` | POST |
 
 ---
 
 ## Páginas
 
-### 🎫 Boletería (`/boleteria`) — **Implementada**
+### 🎫 Boletería (`/boleteria`) — **Implementada completa**
 
-Vista principal del sistema de venta de pasajes.
+Vista principal del sistema de venta de pasajes con flujo de compra integrado.
 
 **Funcionalidad:**
 - Al montarse, llama a `GET /viajes?estado=en_venta`, `GET /rutas` y `GET /ciudades` en paralelo
@@ -117,14 +118,26 @@ Vista principal del sistema de venta de pasajes.
   - Tarifa en Bolivianos (Bs)
   - Badge "En venta"
 - Botón **"Ver Asientos"** que llama a `GET /viajes/:id/asientos` y expande un mapa visual
-- Mapa de asientos con grid 4 columnas y colores por estado:
-  - 🟢 Verde = Disponible
+- Mapa de asientos interactivo (grid 4 columnas, colores por estado):
+  - 🟢 Verde = Disponible (**clic para comprar**)
   - 🟡 Amarillo = En proceso
   - 🔴 Rojo = Ocupado
-- **Estados manejados:**
-  - ⏳ Loading: spinner + mensaje
-  - ⚠️ Error: mensaje + botón "Reintentar"
-  - 📭 Vacío: mensaje informativo
+
+**Flujo de compra (Fase 6):**
+1. El usuario hace clic en un asiento verde (disponible)
+2. Se abre un **modal glassmórfico** con:
+   - Info del viaje (ruta, número de asiento, tarifa)
+   - Formulario: nombre completo, tipo documento (CI/Pasaporte), número documento, método de pago
+3. Al confirmar, se envía `POST /boletos` con `version_asiento` del asiento original
+4. **Si 201 (éxito):** toast verde → `"✅ Boleto BOL-XXXX emitido"` + cierra modal + refresca asientos
+5. **Si 409 (conflicto):** toast rojo/naranja con pulso agresivo → `"¡Asiento vendido a otro usuario!"` + cierra modal + refresca asientos automáticamente
+6. **Si otro error:** toast rojo con mensaje del servidor
+
+**Estados manejados:**
+- ⏳ Loading: spinner + mensaje
+- ⚠️ Error: mensaje + botón "Reintentar"
+- 📭 Vacío: mensaje informativo
+- 🔄 Compra en progreso: botón deshabilitado + spinner inline
 
 ### 📋 Catálogos (`/catalogos`) — Placeholder
 
@@ -149,6 +162,9 @@ El frontend usa un design system **dark premium** con tokens CSS:
   - Botones primary (gradient) y ghost (outline)
   - Spinner de carga animado
   - Fade-in staggered para cards
+  - **Modal** con backdrop blur + slide-in animation
+  - **Formularios** con inputs dark-themed + focus glow indigo
+  - **Toast notifications** (success/error/conflict con pulso animado)
 - **Responsive:** Breakpoint a 768px (navbar vertical, grid 1-col)
 
 ---
@@ -158,3 +174,8 @@ El frontend usa un design system **dark premium** con tokens CSS:
 - **No se inventaron endpoints:** Todas las llamadas HTTP usan estrictamente los endpoints de `openapi.yaml`.
 - **No se tocó el backend:** Cero modificaciones a cualquier archivo en `backend/`.
 - **Resolución de nombres:** La boletería resuelve `ruta_id` → nombre de ciudades origen/destino cargando rutas y ciudades en paralelo (3 requests concurrentes con `Promise.all`).
+- **Bloqueo optimista:** El `version_asiento` se toma directamente del objeto asiento devuelto por la API. Si la versión cambia en el servidor entre lectura y compra → 409.
+- **Sin librerías de UI externas:** Modal construido con CSS nativo + estado React (`modalOpen`). Toast notifications sin dependencias.
+- **Botón bloqueado durante compra:** El estado `buying` deshabilita el formulario y muestra spinner inline.
+- **Vendedor estático:** `vendedor_id: 1` (hardcoded hasta implementar autenticación).
+- **Ciudades de ruta:** `ciudad_subida_id` y `ciudad_bajada_id` se derivan automáticamente de la ruta del viaje.

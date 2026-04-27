@@ -54,4 +54,7 @@ export const createViaje       = (data) => api.post('/viajes', data).then(r => r
 export const publicarViaje     = (id)   => api.patch(`/viajes/${id}/publicar`).then(r => r.data);
 export const getAsientos       = (viajeId) => api.get(`/viajes/${viajeId}/asientos`).then(r => r.data);
 
+// ── Boletos (Etapa 3) ──
+export const comprarBoleto     = (data) => api.post('/boletos', data).then(r => r.data);
+
 export default api;
