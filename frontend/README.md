@@ -156,9 +156,20 @@ Vista para la gestión de datos maestros con pestañas navegables y un component
   - **Buses (HU-003):** Select de "Tipo" poblado con el catálogo de Tipos de Bus.
   - **Personal (HU-004):** Password requerido al crear, pero opcional (no se envía si está vacío) al editar.
 
-### 🗓️ Viajes (`/viajes`) — Placeholder
+### 🗓️ Viajes (`/viajes`) — **Implementado (Fase 8)**
 
-Muestra tarjetas para las funciones de programación (Crear Viaje, Mapa de Asientos, Publicar Viaje) con sus HUs.
+Vista de programación y publicación de viajes (HU-005, HU-006, HU-007). Diseño de dos paneles:
+
+**1. Panel Superior (Formulario de Programación):**
+- Campos para crear un nuevo viaje (Fecha, Hora, Tarifa Base).
+- Selects dinámicos conectados a catálogos (Rutas, Buses, Personal).
+- **Filtros Frontend:** Los selectores de personal discriminan automáticamente entre `chofer` y `ayudante` filtrando los datos del endpoint.
+- Al crear, genera automáticamente el viaje y sus asientos correspondientes (backend).
+
+**2. Panel Inferior (Lista de Viajes):**
+- Tabla con el historial completo de viajes.
+- **Acción de Publicación:** Si un viaje está en estado `programado`, muestra un botón `📢 Publicar`.
+- Al publicar (PATCH `/viajes/:id/publicar`), el viaje pasa a estado `en_venta` y desaparece el botón de publicación, haciéndolo visible en la pantalla de Boletería.
 
 ---
 
